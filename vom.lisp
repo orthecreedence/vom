@@ -2,17 +2,18 @@
   (:use)
   (:import-from #:cl
                 #:t #:nil
-                #:defpackage #:*package* #:package-name #:find-package
+                #:defpackage #:in-package #:*package* #:package-name #:find-package
                 #:eval-when
                 #:eval
                 #:defun #:defmacro
                 #:defvar #:defparameter
-                #:declare
+                #:declare #:optimize #:type #:speed #:safety #:debug
+                #:keyword #:integer
                 #:assert
                 #:member
                 #:macro-function
                 #:documentation
-                #:let #:let* #:progn
+                #:let #:let* #:progn #:multiple-value-bind
                 #:&rest #:&key
                 #:if #:when #:unless
                 #:loop
@@ -20,6 +21,7 @@
                 #:format
                 #:identity
                 #:get-universal-time
+                #:get-decoded-time
                 #:string #:string-downcase #:make-string #:concatenate
                 #:intern
                 #:setf #:getf
@@ -63,15 +65,15 @@
   (let ((package-name (string (package-name (find-package package-keyword)))))
     (setf (getf *config* (intern package-name :keyword)) level-name)))
 
-(defun timestamp ()
-  "Get unix timestamp."
-  (let ((diff 2208988800))  ; (encode-universal-time 0 0 0 1 1 1970 0)
-    (- (get-universal-time) diff)))
+(defun pretty-time ()
+  "Convert a timestamp to a HH:MM:SS time."
+  (multiple-value-bind (second minute hour)
+      (get-decoded-time)
+    (format nil "~2,'0D:~2,'0D:~2,'0D" hour minute second)))
 
 (defun do-log (level-name log-level package-keyword format-str args)
   "The given data to the current *log-stream* stream."
-  (declare (optimize (speed 3) (safety 0)
-                     (debug 0) (space 0))
+  (declare (optimize (speed 3) (safety 0) (debug 0))
            (type keyword level-name package-keyword)
            (type integer log-level)
            (type string format-str)
@@ -86,7 +88,6 @@
          (package-level-value (getf *levels* package-level 0)))
     (when (<= log-level package-level-value)
       (let* ((level-str (string level-name))
-             (timestamp (timestamp))
              (format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%")))
         (apply 'format
                (append (list
@@ -96,7 +97,7 @@
                          (make-string (- *max-level-name-length* (length level-str))
                                       :initial-element #\space)
                          level-str
-                         timestamp
+                         (pretty-time)
                          (string-downcase (string package-keyword)))
                        args))))))
 
