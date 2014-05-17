@@ -1,5 +1,9 @@
 (defpackage :vom
+  ;; DON'T use :cl, otherwise most of the implementations bitch about using
+  ;; error and warn functions
   (:use)
+  ;; import everything from cl that we actually need. while obnoxious, it makes
+  ;; sure vom runs smoothly on most (all?) implementations.
   (:import-from #:cl
                 #:t #:nil
                 #:defpackage #:in-package #:*package* #:package-name #:find-package
@@ -44,6 +48,8 @@
            #:debug2))
 (in-package :vom)
 
+;; define our *levels* and *max-level-name-length* before the define-level macro
+;; is defined (so it can access them)
 (eval-when (:load-toplevel :compile-toplevel)
   (defparameter *levels* '(:off 0)
     "Holds the log level mappings (keyword -> value).")
@@ -60,7 +66,8 @@
   "Holds the stream we're logging to.")
 
 (defun config (package-keyword level-name)
-  "Configure the log level for a package. The log level is given as a keyword."
+  "Configure the log level for a package (or use t for the package name to set
+   the default log level). The log level is given as a keyword."
   (assert (member level-name *levels*))
   (let ((package-name (string (package-name (find-package package-keyword)))))
     (setf (getf *config* (intern package-name :keyword)) level-name)))
