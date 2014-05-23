@@ -47,7 +47,9 @@
            #:info
            #:debug
            #:debug1
-           #:debug2))
+           #:debug2
+           #:debug3
+           #:debug4))
 (in-package :vom)
 
 ;; define our *levels* and *max-level-name-length* before the define-level macro
