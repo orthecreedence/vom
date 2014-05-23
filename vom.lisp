@@ -33,8 +33,9 @@
                 #:+ #:- #:> #:< #:<= #:>=
                 #:apply #:funcall
                 #:append #:list #:length)
-  (:shadow #:debug
-           #:warn)
+  (:shadow #:error
+           #:warn
+           #:debug)
   (:export #:config
            #:*log-stream*
            
