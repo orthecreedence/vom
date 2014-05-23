@@ -117,10 +117,10 @@
     `(progn
        (setf (getf *levels* ,name) ,level-value)
        (defmacro ,macro-name (format-str &rest args)
-         ,(format nil "Log output to the ~s log level (~a)" name (getf *levels* name))
+         ,(format nil "Log output to the ~s log level (~a)" name level-value)
          (let ((pkg (intern (package-name *package*) :keyword)))
            `(do-log ,,name ,,level-value ,pkg ,format-str ,args)))
-       (setf (documentation ',log-sym 'function) (documentation ',macro-name 'function))
+       (setf (documentation ',log-sym 'cl:function) (documentation ',macro-name 'cl:function))
        (setf (macro-function ',log-sym) (macro-function ',macro-name))
        (setf *max-level-name-length* (max *max-level-name-length*
                                           (length (string ,name)))))))
