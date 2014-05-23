@@ -11,7 +11,7 @@
                 #:eval
                 #:defun #:defmacro
                 #:defvar #:defparameter
-                #:declare #:optimize #:type #:speed #:safety #:debug
+                #:declare #:optimize #:type
                 #:keyword #:integer
                 #:assert
                 #:member
@@ -33,6 +33,8 @@
                 #:+ #:- #:> #:< #:<= #:>=
                 #:apply #:funcall
                 #:append #:list #:length)
+  (:shadow #:debug
+           #:warn)
   (:export #:config
            #:*log-stream*
            
@@ -80,7 +82,7 @@
 
 (defun do-log (level-name log-level package-keyword format-str args)
   "The given data to the current *log-stream* stream."
-  (declare (optimize (speed 3) (safety 0) (debug 0))
+  (declare (optimize (cl:speed 3) (cl:safety 0) (cl:debug 0))
            (type keyword level-name package-keyword)
            (type integer log-level)
            (type string format-str)
