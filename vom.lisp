@@ -19,7 +19,7 @@
                 #:documentation
                 #:let #:let* #:progn #:multiple-value-bind
                 #:&rest #:&key
-                #:if #:when #:unless
+                #:if #:when #:unless #:cond
                 #:loop
                 #:car #:cdr #:cddr
                 #:format
@@ -27,9 +27,11 @@
                 #:get-universal-time
                 #:get-decoded-time
                 #:string #:string-downcase #:make-string #:concatenate
+                #:symbolp
                 #:intern
                 #:setf #:getf
                 #:max #:min
+                #:eq
                 #:+ #:- #:> #:< #:<= #:>=
                 #:apply #:funcall
                 #:append #:list #:length)
@@ -74,8 +76,11 @@
   "Configure the log level for a package (or use t for the package name to set
    the default log level). The log level is given as a keyword."
   (assert (member level-name *levels*))
-  (let ((package-name (string (package-name (find-package package-keyword)))))
-    (setf (getf *config* (intern package-name :keyword)) level-name)))
+  (cond ((eq package-keyword t)
+         (setf (getf *config* t) level-name))
+        ((symbolp package-keyword)
+         (let ((package-name (string (package-name (find-package package-keyword)))))
+           (setf (getf *config* (intern package-name :keyword)) level-name)))))
 
 (defun pretty-time ()
   "Convert a timestamp to a HH:MM:SS time."
