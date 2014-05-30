@@ -83,7 +83,7 @@
       (get-decoded-time)
     (format nil "~2,'0D:~2,'0D:~2,'0D" hour minute second)))
 
-(defun do-log (level-name log-level package-keyword format-str args)
+(defun do-log (level-name log-level package-keyword format-str &rest args)
   "The given data to the current *log-stream* stream."
   (declare (optimize (cl:speed 3) (cl:safety 0) (cl:debug 0))
            (type keyword level-name package-keyword)
@@ -122,7 +122,7 @@
        (defmacro ,macro-name (format-str &rest args)
          ,(format nil "Log output to the ~s log level (~a)" name level-value)
          (let ((pkg (intern (package-name *package*) :keyword)))
-           `(do-log ,,name ,,level-value ,pkg ,format-str ,args)))
+           `(do-log ,,name ,,level-value ,pkg ,format-str ,@args)))
        (setf (documentation ',log-sym 'cl:function) (documentation ',macro-name 'cl:function))
        (setf (macro-function ',log-sym) (macro-function ',macro-name))
        (setf *max-level-name-length* (max *max-level-name-length*
