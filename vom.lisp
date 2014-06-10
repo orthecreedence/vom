@@ -69,7 +69,7 @@
    T as the default (used if logging from a package that hasn't been
    configured).")
 
-(defvar *log-stream* *standard-output*
+(defvar *log-stream* cl:*standard-output*
   "Holds the stream we're logging to.")
 
 (defun config (package-keyword level-name)
