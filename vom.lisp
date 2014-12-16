@@ -69,7 +69,7 @@
    T as the default (used if logging from a package that hasn't been
    configured).")
 
-(defvar *log-stream* cl:*standard-output*
+(defvar *log-stream* t
   "Holds the stream we're logging to.")
 
 (defun config (package-keyword level-name)
@@ -79,7 +79,10 @@
   (cond ((eq package-keyword t)
          (setf (getf *config* t) level-name))
         ((symbolp package-keyword)
-         (let ((package-name (string (package-name (find-package package-keyword)))))
+         (let* ((name (find-package package-keyword))
+                (package-name (string (if name
+                                          (package-name name)
+                                          package-keyword))))
            (setf (getf *config* (intern package-name :keyword)) level-name)))))
 
 (defun pretty-time ()
