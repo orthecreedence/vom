@@ -53,10 +53,27 @@ In the above examples, any unconfigured package will have the loglevel of
 `:error`, but the package `my-package` will log anything that's a `:notice` or
 above.
 
-### Output stream
+### \*log-stream\*
 
-You can change the stream that vom logs to via `vom:*log-stream*`. This defaults
-to `t` (ie standard output).
+The stream that vom logs to by default. This defaults to `t` (aka
+`*standard-output*`)
+
+### \*log-hook\*
+
+This is a function of 3 arguments that takes a log level, a package keyword
+name, and that package's configured log level and returns one or more streams as
+multiple values that the log entry will be logged to:
+
+```lisp
+;; example: this hook logs the request to multiple streams if we're getting a
+;; log entry from the "particle-accelerator" package
+(setf vom:*log-hook*
+  (lambda (level package package-level)
+    (declare (ignore level package-level))
+    (if (eq package :particle-accelerator)
+        (values t *my-file-log-stream* *another-stream*)
+        t)))
+```
 
 ## License
 

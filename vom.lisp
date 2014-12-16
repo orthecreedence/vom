@@ -9,9 +9,9 @@
                 #:defpackage #:in-package #:*package* #:package-name #:find-package
                 #:eval-when
                 #:eval
-                #:defun #:defmacro
+                #:lambda #:defun #:multiple-value-list #:defmacro
                 #:defvar #:defparameter
-                #:declare #:optimize #:type
+                #:declare #:optimize #:type #:ignore
                 #:keyword #:integer
                 #:assert
                 #:member
@@ -20,10 +20,9 @@
                 #:let #:let* #:progn #:multiple-value-bind
                 #:&rest #:&key
                 #:if #:when #:unless #:cond
-                #:loop
+                #:loop #:dolist
                 #:car #:cdr #:cddr
-                #:format
-                #:identity
+                #:write-sequence #:format
                 #:get-universal-time
                 #:get-decoded-time
                 #:string #:string-downcase #:make-string #:concatenate
@@ -40,6 +39,7 @@
            #:debug)
   (:export #:config
            #:*log-stream*
+           #:*log-hook*
            
            #:emerg
            #:alert
@@ -70,7 +70,15 @@
    configured).")
 
 (defvar *log-stream* t
-  "Holds the stream we're logging to.")
+  "Holds the default stream we're logging to.")
+
+(defvar *log-hook*
+  (lambda (log-level package-keyword package-log-level)
+    (declare (ignore log-level package-keyword package-log-level))
+    *log-stream*)
+  "Holds a function that, given a log-level, a package name, and the effective
+   log-level for that package, returns one or more (via (values ...)) streams
+   that this log will be sent to.")
 
 (defun config (package-keyword level-name)
   "Configure the log level for a package (or use t for the package name to set
@@ -105,21 +113,30 @@
          (package-level (if package-level
                             package-level
                             (getf *config* t)))
-         (package-level-value (getf *levels* package-level 0)))
+         (package-level-value (getf *levels* package-level 0))
+         (log-streams (multiple-value-list
+                        (funcall *log-hook*
+                                 log-level
+                                 package-keyword
+                                 package-level-value))))
     (when (<= log-level package-level-value)
       (let* ((level-str (string level-name))
-             (format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%")))
-        (apply 'format
-               (append (list
-                         *log-stream*
-                         format-str)
-                       (list 
-                         (make-string (- *max-level-name-length* (length level-str))
-                                      :initial-element #\space)
-                         level-str
-                         (pretty-time)
-                         (string-downcase (string package-keyword)))
-                       args))))))
+             (format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%"))
+             (logline (apply 'format
+                             (append (list
+                                       nil
+                                       format-str)
+                                     (list
+                                       (make-string (- *max-level-name-length* (length level-str))
+                                                    :initial-element #\space)
+                                       level-str
+                                       (pretty-time)
+                                       (string-downcase (string package-keyword)))
+                                     args))))
+        (dolist (stream log-streams)
+          (write-sequence logline (if (eq stream t)
+                                      cl:*standard-output*
+                                      stream)))))))
 
 (defmacro define-level (name level-value)
   "Define a log level."
