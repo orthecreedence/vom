@@ -69,7 +69,7 @@
    T as the default (used if logging from a package that hasn't been
    configured).")
 
-(defvar *log-stream* t
+(defvar *log-stream* (make-synonym-stream 'cl:*standard-output*)
   "Holds the default stream we're logging to.")
 
 (defvar *log-hook*
