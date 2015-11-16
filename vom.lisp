@@ -33,7 +33,8 @@
                 #:eq
                 #:+ #:- #:> #:< #:<= #:>=
                 #:apply #:funcall
-                #:append #:list #:length)
+                #:append #:list #:length
+                #:make-synonym-stream)
   (:shadow #:error
            #:warn
            #:debug)
