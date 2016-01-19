@@ -137,7 +137,8 @@
         (dolist (stream log-streams)
           (write-sequence logline (if (eq stream t)
                                       cl:*standard-output*
-                                      stream)))))))
+                                      stream))
+          (cl:finish-output stream))))))
 
 (defmacro define-level (name level-value)
   "Define a log level."
