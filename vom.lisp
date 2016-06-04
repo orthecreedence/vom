@@ -41,6 +41,8 @@
   (:export #:config
            #:*log-stream*
            #:*log-hook*
+           #:*config*
+           #:*log-formatter*
            
            #:emerg
            #:alert
@@ -80,6 +82,25 @@
   "Holds a function that, given a log-level, a package name, and the effective
    log-level for that package, returns one or more (via (values ...)) streams
    that this log will be sent to.")
+
+(defparameter *log-formatter*
+  (lambda (format-str level-str package-keyword args)
+    (let* ((format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%")))
+      (apply 'format
+             (append (list
+                       nil
+                       format-str)
+                     (list
+                       (make-string (- *max-level-name-length* (length level-str))
+                                    :initial-element #\space)
+                       level-str
+                       (pretty-time)
+                       (string-downcase (string package-keyword)))
+                     args))))
+  "A function that takes a format string (user-supplied), a level string (eg
+   'notice' or 'error'), a keyword of the current package, and a list of args
+   the user supplied with the format string and returns a string of the log line
+   we want logged.")
 
 (defun config (package-keyword level-name)
   "Configure the log level for a package (or use t for the package name to set
@@ -122,18 +143,7 @@
                                  package-level-value))))
     (when (<= log-level package-level-value)
       (let* ((level-str (string level-name))
-             (format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%"))
-             (logline (apply 'format
-                             (append (list
-                                       nil
-                                       format-str)
-                                     (list
-                                       (make-string (- *max-level-name-length* (length level-str))
-                                                    :initial-element #\space)
-                                       level-str
-                                       (pretty-time)
-                                       (string-downcase (string package-keyword)))
-                                     args))))
+             (logline (funcall *log-formatter* format-str level-str package-keyword args)))
         (dolist (stream log-streams)
           (write-sequence logline (if (eq stream t)
                                       cl:*standard-output*
