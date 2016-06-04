@@ -42,6 +42,7 @@
            #:*log-stream*
            #:*log-hook*
            #:*config*
+           #:*time-formatter*
            #:*log-formatter*
            
            #:emerg
@@ -83,6 +84,13 @@
    log-level for that package, returns one or more (via (values ...)) streams
    that this log will be sent to.")
 
+(defparameter *time-formatter*
+  (lambda ()
+    (multiple-value-bind (second minute hour)
+        (get-decoded-time)
+      (format nil "~2,'0D:~2,'0D:~2,'0D" hour minute second)))
+  "A function of 0 args that returns the current time in the desired format.")
+
 (defparameter *log-formatter*
   (lambda (format-str level-str package-keyword args)
     (let* ((format-str (concatenate 'string "~a<~a> [~a] ~a - " format-str "~%")))
@@ -94,7 +102,7 @@
                        (make-string (- *max-level-name-length* (length level-str))
                                     :initial-element #\space)
                        level-str
-                       (pretty-time)
+                       (funcall *time-formatter*)
                        (string-downcase (string package-keyword)))
                      args))))
   "A function that takes a format string (user-supplied), a level string (eg
@@ -114,12 +122,6 @@
                                           (package-name name)
                                           package-keyword))))
            (setf (getf *config* (intern package-name :keyword)) level-name)))))
-
-(defun pretty-time ()
-  "Convert a timestamp to a HH:MM:SS time."
-  (multiple-value-bind (second minute hour)
-      (get-decoded-time)
-    (format nil "~2,'0D:~2,'0D:~2,'0D" hour minute second)))
 
 (defun do-log (level-name log-level package-keyword format-str &rest args)
   "The given data to the current *log-stream* stream."
