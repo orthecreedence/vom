@@ -134,7 +134,7 @@
    
    This caches the package->level connection in *package-level-cache*."
   (declare (optimize (cl:speed 3) (cl:safety 0) (cl:debug 0))
-           (type keyworkd package-keyword))
+           (type keyword package-keyword))
   (let ((cached (getf *package-level-cache* package-keyword)))
     (when cached (return-from find-package-level cached))
     (let* ((package (find-package package-keyword))
