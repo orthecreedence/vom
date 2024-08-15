@@ -10,6 +10,7 @@
                 #:eval-when
                 #:eval
                 #:lambda #:defun #:multiple-value-list #:defmacro
+		#:declaim #:function
                 #:return-from
                 #:defvar #:defparameter
                 #:declare #:optimize #:type #:ignore
@@ -77,6 +78,7 @@
 (defvar *log-stream* (make-synonym-stream 'cl:*standard-output*)
   "Holds the default stream we're logging to.")
 
+(declaim (function *log-hook* *log-formatter*))
 (defvar *log-hook*
   (lambda (log-level package-keyword package-log-level)
     (declare (ignore log-level package-keyword package-log-level))
